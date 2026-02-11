@@ -1,0 +1,5 @@
+pandas
+numpy
+akshare
+baostock
+pyarrow
