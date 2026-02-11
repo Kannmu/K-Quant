@@ -114,8 +114,10 @@ def calculate_risk_metrics(equity: pd.Series, annualized_return: float,
 
     # Sharpe ratio
     excess_returns = daily_returns - 0.03 / 252  # Risk-free rate
-    sharpe_ratio = (excess_returns.mean() / daily_returns.std() * np.sqrt(252)) \
-                   if daily_returns.std() > 0 else 0
+    if daily_returns.std() > 1e-10:  # Avoid division by near-zero
+        sharpe_ratio = (excess_returns.mean() / daily_returns.std()) * np.sqrt(252)
+    else:
+        sharpe_ratio = 0.0
 
     # Sortino ratio (downside deviation)
     downside_returns = daily_returns[daily_returns < 0]

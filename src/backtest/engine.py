@@ -295,12 +295,12 @@ class BacktestEngine:
         if len(equity_curve) > 1:
             daily_returns = equity_curve['total_value'].pct_change().dropna()
             excess_returns = daily_returns - 0.03 / 252  # Daily risk-free rate
-            if excess_returns.std() > 0:
-                sharpe_ratio = (excess_returns.mean() / excess_returns.std()) * (252 ** 0.5)
+            if daily_returns.std() > 1e-10:  # Avoid division by near-zero
+                sharpe_ratio = (excess_returns.mean() / daily_returns.std()) * (252 ** 0.5)
             else:
-                sharpe_ratio = 0
+                sharpe_ratio = 0.0
         else:
-            sharpe_ratio = 0
+            sharpe_ratio = 0.0
 
         # Trade statistics
         trades_df = self.broker.get_trade_history()
