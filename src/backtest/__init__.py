@@ -4,8 +4,9 @@ Backtest module for K-Quant System
 Provides event-driven backtesting engine with A-share specific rules.
 """
 
-from .broker import Broker, Order, OrderType, OrderStatus, FillResult
-from .portfolio import Portfolio, Position
+from backtest.broker import Broker, FillResult, Order, OrderStatus, OrderType
+from backtest.engine import BacktestEngine, BacktestResult, print_backtest_report
+from backtest.portfolio import Portfolio, Position
 
 __all__ = [
     "Broker",
@@ -13,6 +14,9 @@ __all__ = [
     "OrderType",
     "OrderStatus",
     "FillResult",
+    "BacktestEngine",
+    "BacktestResult",
+    "print_backtest_report",
     "Portfolio",
     "Position",
 ]
