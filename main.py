@@ -7,6 +7,7 @@ Run backtests from command line.
 Examples:
     python main.py --stock 601012 --strategy ma --start 20230101 --end 20241231
     python main.py --stock 601012 --strategy rsi --cash 100000
+    python main.py --stock 601012 --plot  # Generate visualization
 """
 
 import argparse
@@ -19,6 +20,8 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from data_loader import load_stock_data
 from backtest.engine import BacktestEngine, print_backtest_report
 from strategy.templates import DoubleMovingAverageStrategy, RSIStrategy, MACDStrategy
+from analysis.metrics import calculate_all_metrics, print_detailed_metrics
+from analysis.plotting import create_full_report, plot_equity_curve, plot_drawdown
 
 
 def parse_args():
@@ -41,6 +44,10 @@ def parse_args():
                         help="Slow MA period (default: 60)")
     parser.add_argument("--verbose", action="store_true",
                         help="Print detailed trade log")
+    parser.add_argument("--plot", action="store_true",
+                        help="Show plots after backtest")
+    parser.add_argument("--save-plot", type=str, default=None,
+                        help="Save plot to file path")
 
     return parser.parse_args()
 
@@ -85,8 +92,43 @@ def main():
 
     result = engine.run(strategy, data, args.stock)
 
-    # Print report
+    # Print basic report
     print_backtest_report(result)
+
+    # Calculate and print detailed metrics
+    metrics = calculate_all_metrics(
+        result.equity_curve['total_value'],
+        result.trades
+    )
+    print_detailed_metrics(metrics)
+
+    # Plot if requested
+    if args.plot or args.save_plot:
+        import matplotlib.pyplot as plt
+
+        print("\nGenerating plots...")
+
+        # Prepare metrics dict for the report
+        report_metrics = {
+            'sharpe_ratio': metrics.sharpe_ratio,
+            'total_return': metrics.total_return,
+            'max_drawdown': metrics.max_drawdown,
+            'win_rate': metrics.win_rate,
+        }
+
+        fig = create_full_report(
+            result.equity_curve['total_value'],
+            result.trades,
+            title=f"{args.stock} - {strategy.name} Backtest Report",
+            metrics=report_metrics
+        )
+
+        if args.save_plot:
+            fig.savefig(args.save_plot, dpi=150, bbox_inches='tight')
+            print(f"Plot saved to: {args.save_plot}")
+
+        if args.plot:
+            plt.show()
 
     return 0
 

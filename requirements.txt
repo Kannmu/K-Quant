@@ -3,3 +3,4 @@ numpy
 akshare
 baostock
 pyarrow
+matplotlib
